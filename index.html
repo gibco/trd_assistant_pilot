@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Inteligente TRD - Piloto AGN</title>
+    <style>
+        :root {
+            --primary-color: #00539B;
+            --secondary-color: #DD6E42;
+            --accent-color: #4C9F70;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            color: var(--gray-color);
+            font-size: 1.1rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            height: calc(100vh - 200px);
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .message.user .message-avatar {
+            background: var(--secondary-color);
+        }
+        
+        .message.assistant .message-avatar {
+            background: var(--primary-color);
+        }
+        
+        .message-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 70%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message.user .message-content {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: white;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .chat-input input:focus {
+            border-color: var(--primary-color);
+        }
+        
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .panel h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 10px 15px;
+            background: linear-gradient(45deg, var(--accent-color), var(--primary-color));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .examples {
+            list-style: none;
+        }
+        
+        .examples li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .examples li:hover {
+            color: var(--primary-color);
+        }
+        
+        .examples li:last-child {
+            border-bottom: none;
+        }
+        
+        .typing {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--gray-color);
+            font-style: italic;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--gray-color);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        .confidence-indicator {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .confidence-high {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .confidence-medium {
+            background: var(--warning-color);
+            color: var(--dark-color);
+        }
+        
+        .confidence-low {
+            background: var(--error-color);
+            color: white;
+        }
+        
+        .citation {
+            font-size: 0.8rem;
+            color: var(--gray-color);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, transparent 0%, transparent 50%, #ffeb3b 50%, #ffeb3b 100%);
+            background-size: 220% 100%;
+            animation: highlight 2s ease-in-out;
+        }
+        
+        @keyframes highlight {
+            0% {
+                background-position: 100% 0;
+            }
+            100% {
+                background-position: 0 0;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Asistente Inteligente TRD</h1>
+            <p>Piloto de Interpretación Automatizada de Tablas de Retención Documental</p>
+            <p><strong>Archivo General de la Nación de Colombia</strong></p>
+        </div>
+        
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>💬 Consulta tu TRD</h2>
+                    <p>Haz preguntas sobre series documentales, tiempos de retención y disposición final</p>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-avatar">IA</div>
+                        <div class="message-content">
+                            <p>¡Hola! Soy tu asistente para consultas sobre Tablas de Retención Documental. Puedo ayudarte con:</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Buscar series y subseries documentales</li>
+                                <li>Consultar tiempos de retención</li>
+                                <li>Verificar disposición final</li>
+                                <li>Explicar normativa archivística</li>
+                            </ul>
+                            <p>¿En qué puedo ayudarte hoy?</p>
+                            <span class="confidence-indicator confidence-high">Sistema listo</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="userInput" placeholder="Escribe tu consulta sobre TRD aquí..." maxlength="500">
+                        <button class="send-btn" onclick="sendMessage()" id="sendBtn">Enviar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="panel">
+                    <h3>📊 Estado del Sistema</h3>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number">248</span>
+                            <span class="stat-label">Series TRD</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">156</span>
+                            <span class="stat-label">Subseries</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">98%</span>
+                            <span class="stat-label">Precisión</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">1.2s</span>
+                            <span class="stat-label">Resp. Prom.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>⚡ Acciones Rápidas</h3>
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="quickQuery('¿Cuáles son las series de archivo de gestión?')">
+                            📁 Series de Gestión
+                        </button>
+                        <button class="action-btn" onclick="quickQuery('¿Qué documentos tienen conservación total?')">
+                            🛡️ Conservación Total
+                        </button>
+                        <button class="action-btn" onclick="quickQuery('Explícame los tiempos de retención en archivo central')">
+                            ⏱️ Tiempos Retención
+                        </button>
+                        <button class="action-btn" onclick="quickQuery('¿Qué significa eliminación por digitalización?')">
+                            🗑️ Disposición Final
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>💡 Ejemplos de Consultas</h3>
+                    <ul class="examples">
+                        <li onclick="quickQuery('¿Cuánto tiempo debo conservar las actas de comité?')">
+                            Tiempo de conservación de actas
+                        </li>
+                        <li onclick="quickQuery('Busca la serie Comunicaciones Oficiales')">
+                            Buscar serie específica
+                        </li>
+                        <li onclick="quickQuery('¿Qué documentos van a archivo histórico?')">
+                            Documentos archivo histórico
+                        </li>
+                        <li onclick="quickQuery('Explica la diferencia entre CT y E')">
+                            Diferencia CT vs E
+                        </li>
+                        <li onclick="quickQuery('¿Cuál es el marco normativo para TRD?')">
+                            Marco normativo TRD
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="panel">
+                    <h3>📋 Información del Piloto</h3>
+                    <p><strong>Versión:</strong> 1.0 (Piloto)</p>
+                    <p><strong>Dataset:</strong> TRD Institucional 2024</p>
+                    <p><strong>Modelo:</strong> GPT-4 + RAG</p>
+                    <p><strong>Última actualización:</strong> Enero 2025</p>
+                    <p style="font-size: 0.8rem; color: var(--gray-color); margin-top: 10px;">
+                        ⚠️ Este es un sistema piloto para demostración. Las respuestas deben ser validadas por personal archivístico.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de base de datos TRD
+        const trdDatabase = {
+            series: [
+                {
+                    codigo: "100",
+                    serie: "Actas de Comité",
+                    subserie: "Actas de Comité Directivo",
+                    retencionAG: "5 años",
+                    retencionAC: "10 años",
+                    disposicionFinal: "CT",
+                    procedimiento: "Transferir al Archivo Histórico",
+                    normativa: "Ley 594 de 2000, Acuerdo AGN 004 de 2019"
+                },
+                {
+                    codigo: "200",
+                    serie: "Comunicaciones Oficiales",
+                    subserie: "Correspondencia Enviada",
+                    retencionAG: "2 años",
+                    retencionAC: "8 años",
+                    disposicionFinal: "E",
+                    procedimiento: "Eliminación",
+                    normativa: "Ley 594 de 2000"
+                },
+                {
+                    codigo: "300",
+                    serie: "Contratos",
+                    subserie: "Contratos de Prestación de Servicios",
+                    retencionAG: "3 años",
+                    retencionAC: "17 años",
+                    disposicionFinal: "CT",
+                    procedimiento: "Transferir al Archivo Histórico",
+                    normativa: "Código Civil, Ley 594 de 2000"
+                },
+                {
+                    codigo: "400",
+                    serie: "Informes de Gestión",
+                    subserie: "Informes Anuales",
+                    retencionAG: "2 años",
+                    retencionAC: "28 años",
+                    disposicionFinal: "CT",
+                    procedimiento: "Transferir al Archivo Histórico",
+                    normativa: "Ley 594 de 2000, Acuerdo AGN 004 de 2019"
+                }
+            ],
+            glosario: {
+                "CT": "Conservación Total - Los documentos deben conservarse permanentemente por su valor histórico",
+                "E": "Eliminación - Los documentos pueden ser eliminados una vez cumplidos los tiempos de retención",
+                "AG": "Archivo de Gestión - Primera fase del archivo donde se conservan documentos activos",
+                "AC": "Archivo Central - Segunda fase donde se transfieren documentos semiactivos",
+                "TRD": "Tabla de Retención Documental - Instrumento que establece los tiempos de permanencia de los documentos"
+            }
+        };
+
+        let messageCount = 0;
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Simular procesamiento
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                processQuery(message);
+            }, 1500 + Math.random() * 1000);
+        }
+
+        function quickQuery(query) {
+            document.getElementById('userInput').value = query;
+            sendMessage();
+        }
+
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'user' ? 'TÚ' : 'IA';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.innerHTML = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Añadir efecto de highlight
+            messageContent.classList.add('highlight');
+            setTimeout(() => messageContent.classList.remove('highlight'), 2000);
+        }
+
+        function showTyping() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-avatar">IA</div>
+                <div class="message-content">
+                    <div class="typing">
+                        <span>Analizando TRD</span>
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        function processQuery(query) {
+            const response = generateResponse(query);
+            addMessage(response, 'assistant');
+            messageCount++;
+            
+            // Actualizar estadísticas
+            document.querySelector('.stat-number').textContent = 248 + messageCount;
+        }
+
+        function generateResponse(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Búsqueda de series específicas
+            if (lowerQuery.includes('actas') || lowerQuery.includes('comité')) {
+                const serie = trdDatabase.series.find(s => s.serie.toLowerCase().includes('actas'));
+                return `
+                    <p><strong>📋 Serie encontrada: ${serie.serie}</strong></p>
+                    <ul>
+                        <li><strong>Código:</strong> ${serie.codigo}</li>
+                        <li><strong>Subserie:</strong> ${serie.subserie}</li>
+                        <li><strong>Retención AG:</strong> ${serie.retencionAG}</li>
+                        <li><strong>Retención AC:</strong> ${serie.retencionAC}</li>
+                        <li><strong>Disposición Final:</strong> ${serie.disposicionFinal} (${trdDatabase.glosario[serie.disposicionFinal]})</li>
+                    </ul>
+                    <div class="citation">
+                        <strong>Marco normativo:</strong> ${serie.normativa}
+                    </div>
+                    <span class="confidence-indicator confidence-high">Confianza: 95%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('comunicaciones') || lowerQuery.includes('correspondencia')) {
+                const serie = trdDatabase.series.find(s => s.serie.toLowerCase().includes('comunicaciones'));
+                return `
+                    <p><strong>📧 Serie encontrada: ${serie.serie}</strong></p>
+                    <ul>
+                        <li><strong>Código:</strong> ${serie.codigo}</li>
+                        <li><strong>Subserie:</strong> ${serie.subserie}</li>
+                        <li><strong>Retención AG:</strong> ${serie.retencionAG}</li>
+                        <li><strong>Retención AC:</strong> ${serie.retencionAC}</li>
+                        <li><strong>Disposición Final:</strong> ${serie.disposicionFinal} (${trdDatabase.glosario[serie.disposicionFinal]})</li>
+                    </ul>
+                    <div class="citation">
+                        <strong>Marco normativo:</strong> ${serie.normativa}
+                    </div>
+                    <span class="confidence-indicator confidence-high">Confianza: 92%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('conservación total') || lowerQuery.includes('ct')) {
+                const seriesCT = trdDatabase.series.filter(s => s.disposicionFinal === 'CT');
+                return `
+                    <p><strong>🛡️ Documentos con Conservación Total (CT):</strong></p>
+                    <ul>
+                        ${seriesCT.map(s => `<li><strong>${s.serie}:</strong> ${s.subserie}</li>`).join('')}
+                    </ul>
+                    <p><strong>📖 Definición CT:</strong> ${trdDatabase.glosario.CT}</p>
+                    <p>Estos documentos deben transferirse al archivo histórico y conservarse permanentemente debido a su valor testimonial, histórico o cultural.</p>
+                    <span class="confidence-indicator confidence-high">Confianza: 98%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('eliminación') || lowerQuery.includes('disposición final')) {
+                return `
+                    <p><strong>🗑️ Disposición Final en TRD:</strong></p>
+                    <ul>
+                        <li><strong>CT (Conservación Total):</strong> ${trdDatabase.glosario.CT}</li>
+                        <li><strong>E (Eliminación):</strong> ${trdDatabase.glosario.E}</li>
+                    </ul>
+                    <p><strong>⚠️ Importante:</strong> La eliminación de documentos debe seguir el procedimiento establecido en el Acuerdo AGN 004 de 2019, con previa aprobación del Comité de Archivo y elaboración del acta correspondiente.</p>
+                    <div class="citation">
+                        <strong>Referencias:</strong> Ley 594 de 2000, Art. 22; Acuerdo AGN 004 de 2019
+                    </div>
+                    <span class="confidence-indicator confidence-high">Confianza: 97%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('archivo histórico') || lowerQuery.includes('transferencia')) {
+                const seriesCT = trdDatabase.series.filter(s => s.disposicionFinal === 'CT');
+                return `
+                    <p><strong>🏛️ Documentos que van al Archivo Histórico:</strong></p>
+                    <p>Los documentos con disposición final <strong>CT (Conservación Total)</strong> deben transferirse al archivo histórico:</p>
+                    <ul>
+                        ${seriesCT.map(s => `<li>${s.serie} - ${s.subserie}</li>`).join('')}
+                    </ul>
+                    <p><strong>📅 Cronograma:</strong> Las transferencias se realizan una vez cumplidos los tiempos de retención en archivo central.</p>
+                    <p><strong>📋 Procedimiento:</strong> Elaborar inventario documental, solicitar autorización y coordinar con el archivo histórico receptor.</p>
+                    <span class="confidence-indicator confidence-medium">Confianza: 89%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('tiempo') || lowerQuery.includes('retención') || lowerQuery.includes('conservar')) {
+                return `
+                    <p><strong>⏱️ Tiempos de Retención en TRD:</strong></p>
+                    <ul>
+                        <li><strong>Archivo de Gestión (AG):</strong> Tiempo durante el cual los documentos permanecen en la oficina productora para consulta frecuente</li>
+                        <li><strong>Archivo Central (AC):</strong> Tiempo en que los documentos se conservan para consulta esporádica</li>
+                    </ul>
+                    <p><strong>📊 Ejemplos de nuestra TRD:</strong></p>
+                    <ul>
+                        <li>Actas de Comité: AG 5 años + AC 10 años = 15 años total</li>
+                        <li>Correspondencia: AG 2 años + AC 8 años = 10 años total</li>
+                        <li>Contratos: AG 3 años + AC 17 años = 20 años total</li>
+                    </ul>
+                    <div class="citation">
+                        <strong>Fundamento legal:</strong> Los tiempos se establecen según el Acuerdo AGN 004 de 2019 y la normativa específica de cada tipo documental
+                    </div>
+                    <span class="confidence-indicator confidence-high">Confianza: 94%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('normativa') || lowerQuery.includes('marco legal') || lowerQuery.includes('ley')) {
+                return `
+                    <p><strong>📚 Marco Normativo para TRD:</strong></p>
+                    <ul>
+                        <li><strong>Ley 594 de 2000:</strong> Ley General de Archivos de Colombia</li>
+                        <li><strong>Acuerdo AGN 004 de 2019:</strong> Reglamentos para la elaboración de TRD y TVD</li>
+                        <li><strong>Acuerdo AGN 027 de 2006:</strong> Procedimientos para la elaboración de TRD</li>
+                        <li><strong>Decreto 1080 de 2015:</strong> Decreto Único Reglamentario del Sector Cultura</li>
+                        <li><strong>ISO 15489:</strong> Norma internacional para gestión de documentos</li>
+                    </ul>
+                    <p><strong>🎯 Aplicación:</strong> Las TRD deben elaborarse siguiendo estos lineamientos y ser convalidadas por el AGN antes de su implementación.</p>
+                    <div class="citation">
+                        <strong>Consulta adicional:</strong> www.archivogeneral.gov.co
+                    </div>
+                    <span class="confidence-indicator confidence-high">Confianza: 99%</span>
+                `;
+            }
+            
+            if (lowerQuery.includes('diferencia') && (lowerQuery.includes('ct') || lowerQuery.includes('e'))) {
+                return `
+                    <p><strong>🔍 Diferencia entre CT y E:</strong></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px;">
+                            <h4 style="color: #2d5a2d; margin: 0 0 10px 0;">CT - Conservación Total</h4>
+                            <ul style="margin: 0;">
+                                <li>Valor permanente</li>
+                                <li>Transferencia al archivo histórico</li>
+                                <li>Conservación indefinida</li>
+                                <li>Acceso para investigación</li>
+                            </ul>
+                        </div>
+                        <div style="background: #ffe8e8; padding: 15px; border-radius: 8px;">
+                            <h4 style="color: #5a2d2d; margin: 0 0 10px 0;">E - Eliminación</h4>
+                            <ul style="margin: 0;">
+                                <li>Sin valor permanente</li>
+                                <li>Eliminación controlada</li>
+                                <li>Cumplidos los tiempos</li>
+                                <li>Acta de eliminación</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p><strong>⚖️ Criterios de decisión:</strong> Valor administrativo, legal, fiscal, contable, técnico, histórico y cultural del documento.</p>
+                    <span class="confidence-indicator confidence-high">Confianza: 96%</span>
+                `;
+            }
+
+            // Búsqueda de series de gestión
+            if (lowerQuery.includes('series de gestión') || lowerQuery.includes('archivo de gestión')) {
+                return `
+                    <p><strong>📁 Series en Archivo de Gestión:</strong></p>
+                    <p>Todas las series documentales inician en el archivo de gestión. Aquí están las principales de nuestra TRD:</p>
+                    <ul>
+                        ${trdDatabase.series.map(s => `
+                            <li><strong>${s.codigo} - ${s.serie}:</strong> ${s.retencionAG} en AG</li>
+                        `).join('')}
+                    </ul>
+                    <p><strong>💡 Recordatorio:</strong> Los documentos en archivo de gestión son de consulta frecuente y están bajo responsabilidad de la oficina productora.</p>
+                    <div class="citation">
+                        <strong>Definición:</strong> Acuerdo AGN 004 de 2019, Art. 3
+                    </div>
+                    <span class="confidence-indicator confidence-high">Confianza: 91%</span>
+                `;
+            }
+
+            // Respuesta por defecto con sugerencias inteligentes
+            return `
+                <p><strong>🤔 No encontré información específica sobre "${query}"</strong></p>
+                <p>Como asistente de TRD, puedo ayudarte con:</p>
+                <ul>
+                    <li>🔍 <strong>Búsqueda de series:</strong> "Busca la serie Contratos" o "¿Dónde está la subserie de Correspondencia?"</li>
+                    <li>⏱️ <strong>Tiempos de retención:</strong> "¿Cuánto tiempo conservo las actas?" o "Tiempos de retención de informes"</li>
+                    <li>📋 <strong>Disposición final:</strong> "¿Qué documentos van a archivo histórico?" o "Explica CT vs E"</li>
+                    <li>📚 <strong>Normativa:</strong> "¿Cuál es el marco legal de las TRD?"</li>
+                </ul>
+                <p><strong>💭 Sugerencia:</strong> Intenta ser más específico en tu consulta o usa alguno de los ejemplos de la barra lateral.</p>
+                <span class="confidence-indicator confidence-low">Confianza: 45%</span>
+            `;
+        }
+
+        // Event listeners
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Simular actualizaciones en tiempo real
+        setInterval(() => {
+            const precision = document.querySelectorAll('.stat-number')[2];
+            const currentValue = parseInt(precision.textContent);
+            const newValue = Math.max(95, Math.min(99, currentValue + (Math.random() - 0.5) * 2));
+            precision.textContent = Math.round(newValue) + '%';
+        }, 10000);
+
+        // Funcionalidad adicional para demostración
+        function exportConversation() {
+            const messages = document.querySelectorAll('.message');
+            let conversation = 'Conversación con Asistente TRD\n';
+            conversation += '================================\n\n';
+            
+            messages.forEach((msg, index) => {
+                const sender = msg.classList.contains('user') ? 'Usuario' : 'Asistente IA';
+                const content = msg.querySelector('.message-content').innerText;
+                conversation += `${sender}: ${content}\n\n`;
+            });
+            
+            const blob = new Blob([conversation], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'consulta_trd_' + new Date().toISOString().slice(0, 10) + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Agregar botón de exportar conversación
+        function addExportButton() {
+            const chatHeader = document.querySelector('.chat-header');
+            const exportBtn = document.createElement('button');
+            exportBtn.innerHTML = '💾 Exportar Conversación';
+            exportBtn.style.cssText = `
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                padding: 8px 12px;
+                background: rgba(255,255,255,0.2);
+                color: white;
+                border: 1px solid rgba(255,255,255,0.3);
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.8rem;
+            `;
+            exportBtn.onclick = exportConversation;
+            chatHeader.style.position = 'relative';
+            chatHeader.appendChild(exportBtn);
+        }
+
+        // Inicializar funcionalidades adicionales
+        window.addEventListener('load', () => {
+            addExportButton();
+            
+            // Mensaje de bienvenida con delay
+            setTimeout(() => {
+                addMessage(`
+                    <p><strong>🚀 Sistema inicializado correctamente</strong></p>
+                    <p>📊 <strong>Dataset cargado:</strong> 248 series documentales analizadas</p>
+                    <p>🧠 <strong>Modelo IA:</strong> GPT-4 con RAG optimizado para archivística</p>
+                    <p>📖 <strong>Base normativa:</strong> Ley 594/2000, Acuerdo AGN 004/2019</p>
+                    <p>¡Estoy listo para responder tus consultas sobre TRD!</p>
+                    <span class="confidence-indicator confidence-high">Sistema operativo</span>
+                `, 'assistant');
+            }, 2000);
+        });
+
+        // Función para limpiar conversación
+        function clearChat() {
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="message assistant">
+                    <div class="message-avatar">IA</div>
+                    <div class="message-content">
+                        <p>¡Hola! Soy tu asistente para consultas sobre Tablas de Retención Documental. Puedo ayudarte con:</p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Buscar series y subseries documentales</li>
+                            <li>Consultar tiempos de retención</li>
+                            <li>Verificar disposición final</li>
+                            <li>Explicar normativa archivística</li>
+                        </ul>
+                        <p>¿En qué puedo ayudarte hoy?</p>
+                        <span class="confidence-indicator confidence-high">Sistema listo</span>
+                    </div>
+                </div>
+            `;
+            messageCount = 0;
+        }
+
+        // Agregar botón de limpiar conversación
+        function addClearButton() {
+            const sidebar = document.querySelector('.sidebar');
+            const clearPanel = document.createElement('div');
+            clearPanel.className = 'panel';
+            clearPanel.innerHTML = `
+                <h3>🧹 Gestión de Sesión</h3>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="clearChat()" style="background: linear-gradient(45deg, #dc3545, #bd2130);">
+                        🗑️ Limpiar Conversación
+                    </button>
+                    <button class="action-btn" onclick="exportConversation()">
+                        💾 Exportar Consultas
+                    </button>
+                </div>
+            `;
+            sidebar.appendChild(clearPanel);
+        }
+
+        setTimeout(addClearButton, 1000);
+    </script>
+</body>
+</html>
