@@ -56,4 +56,5 @@
 | **Despliegue** | Manual de uso, guía de gobernanza, protocolo de actualización |
 
 ---
-*Esta metodología integra estándares archivísticos internacionales (ISO 15489, ISO 14721-OAIS) con marcos éticos de IA (ISO/IEC 23894, NIST AI RMF) para garantizar el desarrollo responsable de sistemas inteligentes en el dominio archivístico.*
+* Autor Jhon Gonzalez jhon.gonzalez@gmail.com
+* Esta metodología integra estándares archivísticos internacionales (ISO 15489, ISO 14721-OAIS) con marcos éticos de IA (ISO/IEC 23894, NIST AI RMF) para garantizar el desarrollo responsable de sistemas inteligentes en el dominio archivístico.*
